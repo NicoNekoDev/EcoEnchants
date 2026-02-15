@@ -39,6 +39,7 @@ object EnchantFinder : ItemHolderFinder<EcoEnchantLevel>() {
 
     internal fun LivingEntity.clearEnchantmentCache() = levelCache.invalidate(this.uniqueId)
 
+    @Suppress("USELESS_CAST")
     private val LivingEntity.cachedLevels: List<ProvidedLevel>
         get() = levelCache.get(this.uniqueId) {
             toHolderProvider().provide(this.toDispatcher())

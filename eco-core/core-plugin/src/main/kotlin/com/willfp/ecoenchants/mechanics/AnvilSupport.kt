@@ -79,7 +79,7 @@ object AnvilSupport : Listener {
 
         antiRepeat.add(player.uniqueId)
 
-        plugin.scheduler.run {
+        plugin.scheduler.runTask(player) {
             antiRepeat.remove(player.uniqueId)
 
             val left = event.inventory.getItem(0)?.clone()
@@ -105,15 +105,15 @@ object AnvilSupport : Listener {
             val oldLeft = event.inventory.getItem(0)
 
             if (result == FAIL) {
-                return@run
+                return@runTask
             }
 
             if (oldLeft == null || oldLeft.type != outItem.type) {
-                return@run
+                return@runTask
             }
 
             if (left == old) {
-                return@run
+                return@runTask
             }
 
             var cost = oldCost + price
@@ -125,7 +125,7 @@ object AnvilSupport : Listener {
 
             // Cost could be less than zero at times, so I include that here.
             if (cost <= 0) {
-                return@run
+                return@runTask
             }
 
             /*
@@ -135,7 +135,7 @@ object AnvilSupport : Listener {
             val outEnchants = outItem.fast().getEnchants(true)
 
             if (event.inventory.getItem(1) == null && leftEnchants != outEnchants) {
-                return@run
+                return@runTask
             }
 
             if (plugin.configYml.getBool("anvil.use-rework-penalty")) {
