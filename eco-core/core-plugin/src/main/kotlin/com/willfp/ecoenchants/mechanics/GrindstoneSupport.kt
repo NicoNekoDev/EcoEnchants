@@ -1,6 +1,7 @@
 package com.willfp.ecoenchants.mechanics
 
 import com.willfp.eco.core.fast.fast
+import com.willfp.eco.core.gui.player
 import com.willfp.ecoenchants.enchant.wrap
 import com.willfp.ecoenchants.plugin
 import org.bukkit.enchantments.Enchantment
@@ -19,12 +20,12 @@ object GrindstoneSupport : Listener {
         val inventory = event.view.topInventory as? GrindstoneInventory ?: return
 
         // Run everything later to await event completion
-        plugin.scheduler.run {
+        plugin.scheduler.runTask(event.player) {
             val topEnchants = inventory.getItem(0)?.fast()?.getEnchants(true) ?: emptyMap()
             val bottomEnchants = inventory.getItem(1)?.fast()?.getEnchants(true) ?: emptyMap()
 
             if (topEnchants.isEmpty() && bottomEnchants.isEmpty()) {
-                return@run
+                return@runTask
             }
 
             val toKeep = mutableMapOf<Enchantment, Int>()
@@ -45,13 +46,13 @@ object GrindstoneSupport : Listener {
             val result = inventory.getItem(2)
 
             if (result == null || event.isCancelled) {
-                return@run
+                return@runTask
             }
 
-            val meta = result.itemMeta ?: return@run
+            val meta = result.itemMeta ?: return@runTask
 
             if (toKeep.isEmpty()) {
-                return@run
+                return@runTask
             }
 
             if (meta is EnchantmentStorageMeta) {
@@ -90,12 +91,12 @@ object GrindstoneSupport : Listener {
             return
         }
 
-        // Force remove XP
-        plugin.scheduler.runLater(1) {
-            val loc = inventory.location
+        val loc = inventory.location ?: return
 
-            val orbs = loc?.getNearbyEntities(3.0, 3.0, 3.0)
-                ?: emptyList()
+        // Force remove XP
+        plugin.scheduler.runTaskLater(loc, 1) {
+
+            val orbs = loc.getNearbyEntities(3.0, 3.0, 3.0)
 
             for (orb in orbs.filterIsInstance<ExperienceOrb>()) {
                 orb.remove()
